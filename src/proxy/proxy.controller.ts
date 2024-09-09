@@ -39,10 +39,10 @@ export class ProxyController {
         this.httpService.request({
           url,
           method: req.method,
-          headers: {
-            ...req.headers,
-            Authorization: req.headers.authorization || '',
-          },
+          // headers: {
+          //   ...req.headers,
+          //   Authorization: req.headers.authorization || '',
+          // },
           data: req.body,
         }),
       )

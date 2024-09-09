@@ -2,6 +2,7 @@ import { Module, MiddlewareConsumer, RequestMethod } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { ProxyModule } from './proxy/proxy.module'
 import endpointConfig from './configs/endpoint.config'
+import authConfig from './configs/auth.config'
 import { JwtMiddleware } from './middlewares/jwt.middleware'
 import { AuthModule } from './auth/auth.module'
 import { GlobalModule } from './global/global.module'
@@ -10,7 +11,7 @@ import { GlobalModule } from './global/global.module'
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [endpointConfig],
+      load: [endpointConfig, authConfig],
     }),
     ProxyModule,
     AuthModule,

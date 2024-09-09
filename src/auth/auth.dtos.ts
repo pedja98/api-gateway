@@ -1,9 +1,11 @@
-export interface AuthLoginDto {
-  @IsString()
-  @IsNotEmpty()
-  username: string;
+import { IsNotEmpty, IsString } from 'class-validator'
 
-  @IsString()
+export class AuthLoginDto {
   @IsNotEmpty()
-  password: string;
+  @IsString()
+  username: string
+
+  @IsNotEmpty()
+  @IsString()
+  password: string
 }
