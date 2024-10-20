@@ -1,8 +1,9 @@
-import { Controller, All, Req, Res, HttpStatus, HttpException, Logger } from '@nestjs/common'
+import { All, Controller, HttpException, HttpStatus, Logger, Req, Res, UnauthorizedException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { Request, Response } from 'express'
 import { HttpService } from '@nestjs/axios'
 import { lastValueFrom } from 'rxjs'
+import * as jwt from 'jsonwebtoken'
 
 @Controller({ path: 'proxy*' })
 export class ProxyController {
@@ -27,7 +28,13 @@ export class ProxyController {
         headers: req.headers,
         body: req.body,
       })
+      const authHeader = req.headers.authorization
+      if (!authHeader) {
+        throw new UnauthorizedException('No token provided')
+      }
 
+      const token = authHeader.split(' ')[1]
+      jwt.verify(token, this.configService.get<string>('auth.secret'))
       const url = this.resolveUrl(req.url)
       if (!url) {
         throw new HttpException('Service not found', HttpStatus.NOT_FOUND)
@@ -39,10 +46,6 @@ export class ProxyController {
         this.httpService.request({
           url,
           method: req.method,
-          // headers: {
-          //   ...req.headers,
-          //   Authorization: req.headers.authorization || '',
-          // },
           data: req.body,
         }),
       )
