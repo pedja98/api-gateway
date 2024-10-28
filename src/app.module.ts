@@ -6,6 +6,7 @@ import authConfig from './configs/auth.config'
 import { JwtMiddleware } from './middlewares/jwt.middleware'
 import { AuthModule } from './auth/auth.module'
 import { GlobalModule } from './global/global.module'
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { GlobalModule } from './global/global.module'
     ProxyModule,
     AuthModule,
     GlobalModule,
+    RedisModule.register()
   ],
   controllers: [],
   providers: [],
