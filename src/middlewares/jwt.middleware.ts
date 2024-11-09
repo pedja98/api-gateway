@@ -3,29 +3,23 @@ import { NextFunction, Response } from 'express'
 import * as jwt from 'jsonwebtoken'
 import { JwtCustomRequest } from '../types/jwt.types'
 import { ConfigService } from '@nestjs/config'
+import { RedisService } from '../redis/redis.service'
 
 @Injectable()
 export class JwtMiddleware implements NestMiddleware {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly redisService: RedisService,
+  ) {}
 
-  use(req: JwtCustomRequest, res: Response, next: NextFunction) {
-    if (req.originalUrl.includes('/auth/login')) {
-      return next()
-    }
-
-    const authHeader = String(req.headers['authorization'])
-    console.log(req.headers)
-    const token = authHeader && authHeader.split(' ')[1]
-
-    if (!token) {
-      throw new UnauthorizedException('No token provided')
-    }
-
+  async use(req: JwtCustomRequest, res: Response, next: NextFunction) {
     try {
+      const currentUser = String(req.headers['x-username'])
+      const token = await this.redisService.get(currentUser)
       req.user = jwt.verify(token, this.configService.get<string>('auth.secret'))
       next()
     } catch (err) {
-      throw new UnauthorizedException('Invalid token')
+      throw new UnauthorizedException('Session invalid or expired')
     }
   }
 }

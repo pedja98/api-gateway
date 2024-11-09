@@ -6,11 +6,18 @@ import { ConfigService } from '@nestjs/config'
 export class RedisService {
   private redis: Redis
 
+  private timeToLive: number
+
   constructor(private readonly configService: ConfigService) {
     this.redis = new Redis({
       host: this.configService.get<string>('redis.host'),
       port: this.configService.get<number>('redis.port'),
     })
+    this.timeToLive = Number(this.configService.get<number>('redis.ttl'))
+  }
+
+  public getTimeToLive(): number {
+    return this.timeToLive
   }
 
   async set(key: string, value: string, expiration?: number) {

@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsString } from 'class-validator'
 
-export class AuthLoginDto {
+export class AuthLoginRequestDto {
   @IsNotEmpty()
   @IsString()
   username: string
@@ -8,4 +8,10 @@ export class AuthLoginDto {
   @IsNotEmpty()
   @IsString()
   password: string
+}
+
+export class AuthLogoutDto {
+  @IsNotEmpty()
+  @IsString()
+  username: string
 }
