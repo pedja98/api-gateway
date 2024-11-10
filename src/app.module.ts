@@ -8,6 +8,7 @@ import { JwtMiddleware } from './middlewares/jwt.middleware'
 import { AuthModule } from './auth/auth.module'
 import { GlobalModule } from './global/global.module'
 import { RedisModule } from './redis/redis.module'
+import { HeadersValidateMiddleware } from './middlewares/headers-validate-middleware'
 
 @Module({
   imports: [
@@ -25,6 +26,10 @@ import { RedisModule } from './redis/redis.module'
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(HeadersValidateMiddleware)
+      .exclude({ path: '/auth/login', method: RequestMethod.POST })
+      .forRoutes('*')
     consumer.apply(JwtMiddleware).exclude({ path: '/auth/login', method: RequestMethod.POST }).forRoutes('*')
   }
 }

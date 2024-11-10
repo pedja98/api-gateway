@@ -40,6 +40,7 @@ export class ProxyController {
           url,
           method: req.method,
           data: req.body,
+          headers: req.headers,
         }),
       )
 

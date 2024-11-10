@@ -1,0 +1,7 @@
+export const UserTypes = {
+  ADMIN: 'ADMIN',
+  SALESMAN: 'SALESMAN',
+  L1_MANAGER: 'L1_MANAGER',
+  L2_MANAGER: 'L2_MANAGER',
+  L3_MANAGER: 'L3_MANAGER',
+}
