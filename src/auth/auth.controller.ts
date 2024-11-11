@@ -40,7 +40,7 @@ export class AuthController {
   async logout(@Body() authLogout: AuthLogoutDto, @Res() res: Response) {
     try {
       await this.redisService.del(authLogout.username)
-      return res.status(HttpStatus.BAD_REQUEST).json({
+      return res.status(HttpStatus.OK).json({
         message: 'logoutSuccessfully',
       })
     } catch (error) {
