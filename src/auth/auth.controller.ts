@@ -24,7 +24,7 @@ export class AuthController {
   async login(@Body() authLoginReq: AuthLoginRequestDto, @Res() res: Response) {
     try {
       const response = await lastValueFrom(this.httpService.post(this.crmLoginUrl, authLoginReq))
-      const token = jwt.sign({ ...response.data }, this.configService.get<string>('auth.secret'))
+      const token = jwt.sign({ ...response.data.username }, this.configService.get<string>('auth.secret'))
       await this.redisService.set(response.data.username, token, this.redisService.getTimeToLive())
       return res.status(response.status).json(response.data)
     } catch (error) {

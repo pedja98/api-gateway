@@ -8,7 +8,7 @@ import { JwtMiddleware } from './middlewares/jwt.middleware'
 import { AuthModule } from './auth/auth.module'
 import { GlobalModule } from './global/global.module'
 import { RedisModule } from './redis/redis.module'
-import { HeadersValidateMiddleware } from './middlewares/headers-validate-middleware'
+import { HeadersValidateMiddleware } from './middlewares/headers-validate.middleware'
 
 @Module({
   imports: [

@@ -6,7 +6,7 @@ import { lastValueFrom } from 'rxjs'
 
 @Controller({ path: 'proxy*' })
 export class ProxyController {
-  private systemUrls: { [key: string]: string }
+  private readonly systemUrls: { [key: string]: string }
   private readonly logger = new Logger(ProxyController.name)
 
   constructor(
