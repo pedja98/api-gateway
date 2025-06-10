@@ -9,6 +9,9 @@ import { AuthModule } from './auth/auth.module'
 import { GlobalModule } from './global/global.module'
 import { RedisModule } from './redis/redis.module'
 import { HeadersValidateMiddleware } from './middlewares/headers-validate.middleware'
+import { ScheduleModule } from '@nestjs/schedule'
+import { TasksService } from './tasks/tasks.service'
+import { TasksModule } from './tasks/tasks.module'
 
 @Module({
   imports: [
@@ -16,13 +19,15 @@ import { HeadersValidateMiddleware } from './middlewares/headers-validate.middle
       isGlobal: true,
       load: [endpointConfig, authConfig, redisConfig],
     }),
+    ScheduleModule.forRoot(),
     ProxyModule,
     AuthModule,
     GlobalModule,
     RedisModule.register(),
+    TasksModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [TasksService],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
