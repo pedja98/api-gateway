@@ -16,6 +16,7 @@ export class ProxyController {
     this.systemUrls = {
       crm: this.configService.get<string>('endpoint.crm'),
       pc: this.configService.get<string>('endpoint.pc'),
+      om: this.configService.get<string>('endpoint.om'),
     }
   }
 
