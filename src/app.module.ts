@@ -12,6 +12,7 @@ import { HeadersValidateMiddleware } from './middlewares/headers-validate.middle
 import { ScheduleModule } from '@nestjs/schedule'
 import { TasksService } from './tasks/tasks.service'
 import { TasksModule } from './tasks/tasks.module'
+import { OfferModule } from './offer/offer.module'
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { TasksModule } from './tasks/tasks.module'
     GlobalModule,
     RedisModule.register(),
     TasksModule,
+    OfferModule,
   ],
   controllers: [],
   providers: [TasksService],
