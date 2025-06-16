@@ -17,29 +17,29 @@ export class OfferService {
     this.crmApiUrl = this.configService.get('endpoint.crm')
   }
 
-  async createOffer(dto: CreateOfferDto): Promise<any> {
+  async createOffer(dto: CreateOfferDto, headers: Record<string, any>): Promise<any> {
     try {
-      // 1. Call OM to create offer
       const omResponse = await firstValueFrom(
-        this.httpService.post(`${this.omApiUrl}/offers`, {
-          name: dto.name,
-        }),
+        this.httpService.post(`${this.omApiUrl}/offers`, { name: dto.name }, { headers }),
       )
 
       const omOfferId: string = omResponse.data.omOfferId
 
       const crmResponse = await firstValueFrom(
-        this.httpService.post(`${this.crmApiUrl}/offers/`, {
-          name: dto.name,
-          omOfferId: omOfferId,
-          companyId: dto.companyId,
-          opportunityId: dto.opportunityId,
-        }),
+        this.httpService.post(
+          `${this.crmApiUrl}/offers/`,
+          {
+            name: dto.name,
+            omOfferId,
+            companyId: dto.companyId,
+            opportunityId: dto.opportunityId,
+          },
+          { headers },
+        ),
       )
 
       return crmResponse.data
     } catch (error) {
-      console.error('Error during offer creation:', error?.response?.data || error.message)
       throw new InternalServerErrorException('Failed to create offer')
     }
   }
