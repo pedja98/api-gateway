@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import * as jwt from 'jsonwebtoken'
-import { RedisService } from '../redis/redis.service'
+import { RedisService } from '../../redis/redis.service'
 import { ProxyService } from '../proxy/proxy.service'
 import { Request } from 'express'
 import { AuthLogoutDto } from './dtos/auth-logout.dto'
