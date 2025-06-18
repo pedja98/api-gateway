@@ -20,28 +20,24 @@ export class ProxyService {
     }
   }
 
-  async forwardRequest(req: Request): Promise<{ status: number; data: any }> {
-    this.logger.log('Incoming Request:', {
-      method: req.method,
-      url: req.url,
-      headers: req.headers,
-      body: req.body,
-    })
+  async forwardRequest(req: Request, forceUrl?: string, overrideBody?: any): Promise<{ status: number; data: any }> {
+    const resolvedUrl = forceUrl || this.resolveUrl(req.url)
 
-    const resolvedUrl = this.resolveUrl(req.url)
     if (!resolvedUrl) {
       throw new HttpException('Service not found', HttpStatus.NOT_FOUND)
     }
 
-    this.logger.log('Forwarding request to: ' + resolvedUrl)
+    const headers = { ...req.headers }
+    delete headers['content-length']
+    delete headers['Content-Length']
 
     try {
       const proxiedResponse = await lastValueFrom(
         this.httpService.request({
           url: resolvedUrl,
           method: req.method,
-          data: req.body,
-          headers: req.headers,
+          data: overrideBody || req.body,
+          headers,
         }),
       )
 
@@ -51,6 +47,7 @@ export class ProxyService {
       }
     } catch (error) {
       this.logger.error('Error during request forwarding:', {
+        url: resolvedUrl,
         message: error.message,
         status: error.response?.status,
         data: error.response?.data,
