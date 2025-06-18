@@ -1,0 +1,78 @@
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
+import { HttpService } from '@nestjs/axios'
+import { Request } from 'express'
+import { lastValueFrom } from 'rxjs'
+
+@Injectable()
+export class ProxyService {
+  private readonly systemUrls: Record<string, string>
+  private readonly logger = new Logger(ProxyService.name)
+
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly httpService: HttpService,
+  ) {
+    this.systemUrls = {
+      crm: this.configService.get<string>('endpoint.crm'),
+      pc: this.configService.get<string>('endpoint.pc'),
+      om: this.configService.get<string>('endpoint.om'),
+    }
+  }
+
+  async forwardRequest(req: Request): Promise<{ status: number; data: any }> {
+    this.logger.log('Incoming Request:', {
+      method: req.method,
+      url: req.url,
+      headers: req.headers,
+      body: req.body,
+    })
+
+    const resolvedUrl = this.resolveUrl(req.url)
+    if (!resolvedUrl) {
+      throw new HttpException('Service not found', HttpStatus.NOT_FOUND)
+    }
+
+    this.logger.log('Forwarding request to: ' + resolvedUrl)
+
+    try {
+      const proxiedResponse = await lastValueFrom(
+        this.httpService.request({
+          url: resolvedUrl,
+          method: req.method,
+          data: req.body,
+          headers: req.headers,
+        }),
+      )
+
+      return {
+        status: proxiedResponse.status,
+        data: proxiedResponse.data,
+      }
+    } catch (error) {
+      this.logger.error('Error during request forwarding:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data,
+      })
+
+      throw new HttpException(
+        error.response?.data || 'Internal server error',
+        error.response?.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      )
+    }
+  }
+
+  private resolveUrl(originalUrl: string): string | null {
+    const prefix = '/api/v1/proxy/'
+    const urlWithoutPrefix = originalUrl.replace(prefix, '')
+    const [systemKey, ...restPath] = urlWithoutPrefix.split('/')
+
+    const baseUrl = this.systemUrls[systemKey]
+    if (!baseUrl) {
+      return null
+    }
+
+    return `${baseUrl}/${restPath.join('/')}`
+  }
+}
