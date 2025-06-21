@@ -16,16 +16,6 @@ export class OffersController {
     }
   }
 
-  @Get(':id')
-  async getOffer(@Req() req: Request, @Res() res: Response) {
-    try {
-      const offer = await this.offersService.getOffer(req)
-      res.status(200).json(offer)
-    } catch (error) {
-      res.status(error.getStatus?.() || 500).send(error.message || 'Internal server error')
-    }
-  }
-
   @Patch('calculate/:id')
   async calculateOffer(@Req() req: Request, @Res() res: Response) {
     try {
