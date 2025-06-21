@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, Req, Res } from '@nestjs/common'
+import { Controller, Get, Param, Patch, Post, Req, Res } from '@nestjs/common'
 import { OffersService } from './offers.service'
 import { Request, Response } from 'express'
 
@@ -21,6 +21,35 @@ export class OffersController {
     try {
       const offer = await this.offersService.getOffer(req)
       res.status(200).json(offer)
+    } catch (error) {
+      res.status(error.getStatus?.() || 500).send(error.message || 'Internal server error')
+    }
+  }
+
+  @Patch('calculate/:id')
+  async calculateOffer(@Req() req: Request, @Res() res: Response) {
+    try {
+      const data = await this.offersService.calculateOffer(req)
+      res.status(200).json(data)
+    } catch (error) {
+      res.status(error.getStatus?.() || 500).send(error.message || 'Internal server error')
+    }
+  }
+
+  @Get('/statuses/:status')
+  async getAvailableStatuses(@Req() req: Request, @Res() res: Response) {
+    try {
+      res.status(200).json(this.offersService.getAvailableStatuses(req))
+    } catch (error) {
+      res.status(error.getStatus?.() || 500).send(error.message || 'Internal server error')
+    }
+  }
+
+  @Patch('statuses/:id')
+  async changeOfferStatus(@Req() req: Request, @Res() res: Response) {
+    try {
+      const data = await this.offersService.changeOfferStatus(req)
+      res.status(200).json(data)
     } catch (error) {
       res.status(error.getStatus?.() || 500).send(error.message || 'Internal server error')
     }

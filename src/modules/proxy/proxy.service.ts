@@ -20,7 +20,12 @@ export class ProxyService {
     }
   }
 
-  async forwardRequest(req: Request, forceUrl?: string, overrideBody?: any): Promise<{ status: number; data: any }> {
+  async forwardRequest(
+    req: Request,
+    forceUrl?: string,
+    overrideBody?: any,
+    overrideMethod?: string,
+  ): Promise<{ status: number; data: any }> {
     const resolvedUrl = forceUrl || this.resolveUrl(req.url)
 
     if (!resolvedUrl) {
@@ -35,7 +40,7 @@ export class ProxyService {
       const proxiedResponse = await lastValueFrom(
         this.httpService.request({
           url: resolvedUrl,
-          method: req.method,
+          method: overrideMethod || req.method,
           data: overrideBody || req.body,
           headers,
         }),
@@ -49,6 +54,8 @@ export class ProxyService {
       this.logger.error('Error during request forwarding:', {
         url: resolvedUrl,
         message: error.message,
+        method: overrideMethod || req.method,
+        body: overrideBody || req.body,
         status: error.response?.status,
         data: error.response?.data,
       })
