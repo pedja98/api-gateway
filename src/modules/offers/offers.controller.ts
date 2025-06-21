@@ -26,15 +26,6 @@ export class OffersController {
     }
   }
 
-  @Get('/statuses/:status')
-  async getAvailableStatuses(@Req() req: Request, @Res() res: Response) {
-    try {
-      res.status(200).json(this.offersService.getAvailableStatuses(req))
-    } catch (error) {
-      res.status(error.getStatus?.() || 500).send(error.message || 'Internal server error')
-    }
-  }
-
   @Patch('statuses/:id')
   async changeOfferStatus(@Req() req: Request, @Res() res: Response) {
     try {

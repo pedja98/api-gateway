@@ -50,12 +50,9 @@ export class OffersService {
     return { message: 'calculateSuccessful', approvalLevel }
   }
 
-  getAvailableStatuses(req: Request): OfferStatus[] {
-    const status = req.params.status as OfferStatus
-    return AvailableOfferStatuses[status] || []
-  }
-
-  async changeOfferStatus(req: Request): Promise<any> {
+  async changeOfferStatus(req: Request): Promise<{
+    message: string
+  }> {
     const crmOfferId = req.params.id as string
     const omOfferId = req.body.omOfferId as string
     const oldStatus = req.body.oldStatus as OfferStatus
