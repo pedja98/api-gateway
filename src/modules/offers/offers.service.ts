@@ -39,7 +39,7 @@ export class OffersService {
     const approvalLevel = Math.random() < 0.5 ? OfferApprovalLevels.LEVEL_1 : OfferApprovalLevels.LEVEL_2
     const omOfferId = req.params.id as string
 
-    const { status, data } = await this.proxyService.forwardRequest(req, `${this.systemUrls.om}/offers/${omOfferId}`, {
+    const { status } = await this.proxyService.forwardRequest(req, `${this.systemUrls.om}/offers/${omOfferId}`, {
       approvalLevel,
     })
 
@@ -47,7 +47,7 @@ export class OffersService {
       throw new HttpException('Error while updating OM offer', status)
     }
 
-    return data
+    return { message: 'calculateSuccessful', approvalLevel }
   }
 
   getAvailableStatuses(req: Request): OfferStatus[] {
@@ -62,16 +62,21 @@ export class OffersService {
     const newStatus = req.body.newStatus as OfferStatus
     const approvalLevel = req.body.approvalLevel as OfferApprovalLevels
 
+    if (!approvalLevel) {
+      throw new HttpException('calculateNotPerform', HttpStatus.METHOD_NOT_ALLOWED)
+    }
+
     const results = await Promise.all([
       await this.proxyService.forwardRequest(req, `${this.systemUrls.crm}/offers/${crmOfferId}`, undefined, 'GET'),
       await this.proxyService.forwardRequest(req, `${this.systemUrls.om}/offers/${omOfferId}`, undefined, 'GET'),
     ])
 
     const inValidOldStatus = results.some((result) => result.data.status !== oldStatus)
-
+    const inValidApprovalLevel = results[1].data.approvalLevel !== approvalLevel
     const availableOfferStatus = AvailableOfferStatuses[oldStatus]
 
     if (
+      inValidApprovalLevel ||
       inValidOldStatus ||
       !availableOfferStatus.includes(newStatus) ||
       (oldStatus === OfferStatus.DRAFT &&
