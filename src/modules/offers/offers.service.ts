@@ -59,6 +59,8 @@ export class OffersService {
     const newStatus = req.body.newStatus as OfferStatus
     const approvalLevel = req.body.approvalLevel as OfferApprovalLevels
 
+    await this.calculateOffer(req)
+
     if (!approvalLevel) {
       throw new HttpException('calculateNotPerform', HttpStatus.METHOD_NOT_ALLOWED)
     }
