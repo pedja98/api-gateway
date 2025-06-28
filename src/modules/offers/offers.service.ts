@@ -53,50 +53,52 @@ export class OffersService {
   async changeOfferStatus(req: Request): Promise<{
     message: string
   }> {
-    const crmOfferId = req.params.id as string
-    const omOfferId = req.body.omOfferId as string
+    const crmOfferId = req.body.crmOfferId as string
+    const omOfferId = req.params.id as string
     const oldStatus = req.body.oldStatus as OfferStatus
     const newStatus = req.body.newStatus as OfferStatus
-    const approvalLevel = req.body.approvalLevel as OfferApprovalLevels
 
-    await this.calculateOffer(req)
+    const { approvalLevel: calculatedApprovalLevel } = await this.calculateOffer(req)
+    const newCrmStatus =
+      newStatus === OfferStatus.OFFER_PENDING
+        ? calculatedApprovalLevel === OfferApprovalLevels.LEVEL_1
+          ? OfferStatus.L1_PENDING
+          : OfferStatus.L2_PENDING
+        : newStatus
 
-    if (!approvalLevel) {
-      throw new HttpException('calculateNotPerform', HttpStatus.METHOD_NOT_ALLOWED)
-    }
-
-    const results = await Promise.all([
-      await this.proxyService.forwardRequest(req, `${this.systemUrls.crm}/offers/${crmOfferId}`, undefined, 'GET'),
-      await this.proxyService.forwardRequest(req, `${this.systemUrls.om}/offers/${omOfferId}`, undefined, 'GET'),
-    ])
-
-    const inValidOldStatus = results.some((result) => result.data.status !== oldStatus)
-    const inValidApprovalLevel = results[1].data.approvalLevel !== approvalLevel
     const availableOfferStatus = AvailableOfferStatuses[oldStatus]
 
-    if (
-      inValidApprovalLevel ||
-      inValidOldStatus ||
-      !availableOfferStatus.includes(newStatus) ||
-      (oldStatus === OfferStatus.DRAFT &&
-        newStatus === OfferStatus.L1_PENDING &&
-        approvalLevel === OfferApprovalLevels.LEVEL_2) ||
-      (oldStatus === OfferStatus.DRAFT &&
-        newStatus === OfferStatus.L2_PENDING &&
-        approvalLevel === OfferApprovalLevels.LEVEL_1)
-    ) {
+    if (!availableOfferStatus.includes(newStatus)) {
       throw new HttpException('notAllowedToChangeToStatus', HttpStatus.METHOD_NOT_ALLOWED)
     }
 
     await Promise.all([
       await this.proxyService.forwardRequest(req, `${this.systemUrls.crm}/offers/${crmOfferId}`, {
-        status: newStatus,
+        status: newCrmStatus,
       }),
       await this.proxyService.forwardRequest(req, `${this.systemUrls.om}/offers/${omOfferId}`, {
         status: newStatus,
       }),
     ])
 
+    if (newStatus === OfferStatus.OFFER_APPROVED) {
+      const { data } = await this.proxyService.forwardRequest(
+        req,
+        `${this.systemUrls.om}/offers/${omOfferId}`,
+        undefined,
+        'GET',
+      )
+
+      await this.proxyService.forwardRequest(
+        req,
+        `${this.systemUrls.crm}/contracts`,
+        {
+          contractObligation: data.contractObligation,
+          offerId: crmOfferId,
+        },
+        'POST',
+      )
+    }
     return {
       message: 'statusChanged',
     }
