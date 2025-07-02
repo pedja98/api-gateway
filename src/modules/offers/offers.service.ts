@@ -72,7 +72,7 @@ export class OffersService {
       throw new HttpException('notAllowedToChangeToStatus', HttpStatus.METHOD_NOT_ALLOWED)
     }
 
-    await Promise.all([
+    const result = await Promise.all([
       await this.proxyService.forwardRequest(req, `${this.systemUrls.crm}/offers/${crmOfferId}`, {
         status: newCrmStatus,
       }),
@@ -80,6 +80,12 @@ export class OffersService {
         status: newStatus,
       }),
     ])
+
+    result.forEach((elem) => {
+      if (elem.status !== HttpStatus.OK) {
+        throw new HttpException('notAllowedToChangeToStatus', elem.status)
+      }
+    })
 
     if (newStatus === OfferStatus.OFFER_APPROVED) {
       const { data } = await this.proxyService.forwardRequest(
