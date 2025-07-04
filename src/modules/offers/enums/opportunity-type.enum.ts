@@ -1,0 +1,6 @@
+export enum OpportunityType {
+  ACQUISITION = 'ACQUISITION',
+  RENEWAL = 'RENEWAL',
+  CHANGE = 'CHANGE',
+  TERMINATION = 'TERMINATION',
+}
