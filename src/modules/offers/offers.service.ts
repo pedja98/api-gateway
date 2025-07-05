@@ -21,6 +21,10 @@ export class OffersService {
   }
 
   async createOffer(req: Request): Promise<any> {
+    if (['CLOSE_LOST', 'CLOSE_WON'].includes(req.body.status)) {
+      throw new HttpException('Not allowed to create offer in that status', HttpStatus.FORBIDDEN)
+    }
+
     const { status, data } = await this.proxyService.forwardRequest(req, `${this.systemUrls.crm}/offers`, {
       ...req.body,
     })
