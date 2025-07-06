@@ -5,6 +5,7 @@ import { ProxyService } from '../proxy/proxy.service'
 import { OfferApprovalLevels } from './enums/offer-approval-level.enum'
 import { OfferStatus } from './enums/offer-status.enum'
 import { AvailableOfferStatuses } from './consts/offers'
+import { OpportunityType } from './enums/opportunity-type.enum'
 
 @Injectable()
 export class OffersService {
@@ -31,9 +32,25 @@ export class OffersService {
     if (status !== 200) {
       throw new HttpException('Error while creating offer', status)
     }
+    let contractObligation = 0
+
+    if (req.body.opportunityType === OpportunityType.CHANGE) {
+      const { status, data } = await this.proxyService.forwardRequest(
+        req,
+        `${this.systemUrls.crm}/contracts/remaining-months/${req.body.companyId}`,
+        undefined,
+        'GET',
+      )
+      if (status !== 200) {
+        throw new HttpException('Error while creating offer', status)
+      }
+      contractObligation = data
+    }
+
     const omBody = {
       ...req.body,
       crmOfferId: data['crmOfferId'],
+      contractObligation,
     }
 
     return this.proxyService.forwardRequest(req, `${this.systemUrls.om}/offers`, omBody)
