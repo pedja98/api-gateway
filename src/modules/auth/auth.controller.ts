@@ -1,4 +1,4 @@
-import { Body, Controller, HttpStatus, Logger, Post, Req, Res } from '@nestjs/common'
+import { Body, Controller, HttpStatus, Logger, Patch, Post, Req, Res } from '@nestjs/common'
 import { Request, Response } from 'express'
 import { AuthService } from './auth.service'
 import { AuthLogoutDto } from './dtos/auth-logout.dto'
@@ -13,6 +13,19 @@ export class AuthController {
   async login(@Req() req: Request, @Res() res: Response) {
     try {
       const { data, status } = await this.authService.login(req)
+      return res.status(status).json(data)
+    } catch (error) {
+      return res.status(error.response?.status || 500).json({
+        message: 'Auth failed',
+        error: error.response?.data || error.message,
+      })
+    }
+  }
+
+  @Patch('change-password')
+  async changePassword(@Req() req: Request, @Res() res: Response) {
+    try {
+      const { data, status } = await this.authService.changePassword(req)
       return res.status(status).json(data)
     } catch (error) {
       return res.status(error.response?.status || 500).json({
